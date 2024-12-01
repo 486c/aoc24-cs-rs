@@ -1,37 +1,43 @@
 use std::{hash::BuildHasherDefault, iter::zip};
 
-use fxhash::FxHasher32;
+use fxhash::FxHasher;
 use hashbrown::HashMap;
 
-#[inline]
-fn parse_i32(n: u8) -> i32 {
-    n as i32 - 0x30
+#[inline(always)]
+unsafe fn parse_two_numbers_unrolled_u32(s: &[u8]) -> (u32, u32) {
+    (
+        // LEFT
+        (s[0] as u32 - 0x30) * 10000
+            + (s[1] as u32 - 0x30) * 1000
+            + (s[2] as u32 - 0x30) * 100
+            + (s[3] as u32 - 0x30) * 10
+            + (s[4] as u32 - 0x30) * 1,
+        // RIGHT
+        (s[8] as u32 - 0x30) * 10000
+            + (s[9] as u32 - 0x30) * 1000
+            + (s[10] as u32 - 0x30) * 100
+            + (s[11] as u32 - 0x30) * 10
+            + (s[12] as u32 - 0x30) * 1,
+    )
 }
 
-#[inline]
-fn parse_u32(n: u8) -> u32 {
-    n as u32 - 0x30
+#[inline(always)]
+unsafe fn parse_two_numbers_unrolled_i32(s: &[u8]) -> (i32, i32) {
+    (
+        // LEFT
+        (s[0] as i32 - 0x30) * 10000
+            + (s[1] as i32 - 0x30) * 1000
+            + (s[2] as i32 - 0x30) * 100
+            + (s[3] as i32 - 0x30) * 10
+            + (s[4] as i32 - 0x30) * 1,
+        // RIGHT
+        (s[8] as i32 - 0x30) * 10000
+            + (s[9] as i32 - 0x30) * 1000
+            + (s[10] as i32 - 0x30) * 100
+            + (s[11] as i32 - 0x30) * 10
+            + (s[12] as i32 - 0x30) * 1,
+    )
 }
-
-#[inline]
-fn atoi_i32(str: &[u8]) -> i32 {
-    parse_i32(str[0]) * 10000 +
-    parse_i32(str[1]) * 1000 +
-    parse_i32(str[2]) * 100 +
-    parse_i32(str[3]) * 10 +
-    parse_i32(str[4]) 
-}
-
-
-#[inline]
-fn atoi_u32(str: &[u8]) -> u32 {
-    parse_u32(str[0]) * 10000 +
-    parse_u32(str[1]) * 1000 +
-    parse_u32(str[2]) * 100 +
-    parse_u32(str[3]) * 10 +
-    parse_u32(str[4]) 
-}
-
 
 #[aoc(day1, part1)]
 fn part1(input: &str) -> i32 {
@@ -44,10 +50,7 @@ fn part1(input: &str) -> i32 {
         &input[i * 14.. i * 14 + 13]
     })
     .map(|line| {
-        (
-            atoi_i32(&line[0..5]), 
-            atoi_i32(&line[8..13])
-        )
+        unsafe { parse_two_numbers_unrolled_i32(line) }
     }).enumerate() {
         left[i] = x;
         right[i] = y;
@@ -61,22 +64,18 @@ fn part1(input: &str) -> i32 {
 }
 
 #[aoc(day1, part2)]
-pub fn run(input: &str) -> u32 {
-    let mut right: HashMap<u32, u32, BuildHasherDefault<FxHasher32>> = 
+pub fn part2(input: &str) -> u32 {
+    let mut right: HashMap<u32, u32, BuildHasherDefault<FxHasher>> = 
         HashMap::with_capacity_and_hasher(1000, BuildHasherDefault::default());
 
-    let mut left_list = [0u32; 1000];
-
     let input: &[u8] = unsafe { std::mem::transmute(&input[0..]) };
+    let mut left_list = [0; 1000];
 
     for (i, (x,y)) in (0..1000).map(|i| {
         &input[i * 14.. i * 14 + 13]
     })
     .map(|line| {
-        (
-            atoi_u32(&line[0..5]), 
-            atoi_u32(&line[8..13])
-        )
+        unsafe { parse_two_numbers_unrolled_u32(line) }
     }).enumerate() {
         right.entry(y).and_modify(|x| *x += 1).or_insert(1);
         left_list[i] = x;
@@ -84,3 +83,4 @@ pub fn run(input: &str) -> u32 {
 
     left_list.iter().fold(0, |acc, num| acc + num * right.get(num).unwrap_or(&0))
 }
+
