@@ -1,7 +1,7 @@
 use std::{collections::HashMap, iter::zip};
 
 #[aoc(day1, part1)]
-fn part1(input: &str) -> i32 {
+pub fn part1(input: &str) -> i32 {
 
     let mut left = [0i32; 1000];
     let mut right = [0i32; 1000]; 
@@ -25,9 +25,9 @@ fn part1(input: &str) -> i32 {
 }
 
 #[aoc(day1, part2)]
-fn part2(input: &str) -> u32 {
+pub fn part2(input: &str) -> u32 {
     let mut left_list = [0u32; 1000];
-    let mut right = HashMap::with_capacity(1000);
+    let mut right = hashbrown::HashMap::with_capacity(1000);
 
     input.lines()
         .filter_map(|line| line.split_once("   "))
@@ -40,5 +40,5 @@ fn part2(input: &str) -> u32 {
             left_list[i] = nums.0;
         });
 
-    left_list.iter().fold(0, |acc, num| acc + num * right.get(&num).unwrap_or(&0))
+    left_list.iter().fold(0, |acc, num| acc + num * right.get(num).unwrap_or(&0))
 }
