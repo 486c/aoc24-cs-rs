@@ -8,7 +8,6 @@ fn parse_i32(n: u8) -> i32 {
     n as i32 - 0x30
 }
 
-
 #[inline]
 fn parse_u32(n: u8) -> u32 {
     n as u32 - 0x30
@@ -84,22 +83,4 @@ pub fn run(input: &str) -> u32 {
     }
 
     left_list.iter().fold(0, |acc, num| acc + num * right.get(num).unwrap_or(&0))
-}
-
-
-#[test]
-fn bebra() {
-
-    let v = [1, 4, 2, 6, 7, 13, 25];
-
-    let mut a: Vec<i32> = Vec::new();
-
-    for x in &v {
-        let pos = a.binary_search(x).unwrap_or(0);
-
-        a.insert(pos, *x);
-    }
-
-    dbg!(a);
-
 }
