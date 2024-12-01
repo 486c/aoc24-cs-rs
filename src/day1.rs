@@ -1,21 +1,58 @@
-use std::{collections::HashMap, iter::zip};
+use std::{hash::BuildHasherDefault, iter::zip};
+
+use fxhash::FxHasher32;
+use hashbrown::HashMap;
+
+#[inline]
+fn parse_i32(n: u8) -> i32 {
+    n as i32 - 0x30
+}
+
+
+#[inline]
+fn parse_u32(n: u8) -> u32 {
+    n as u32 - 0x30
+}
+
+#[inline]
+fn atoi_i32(str: &[u8]) -> i32 {
+    parse_i32(str[0]) * 10000 +
+    parse_i32(str[1]) * 1000 +
+    parse_i32(str[2]) * 100 +
+    parse_i32(str[3]) * 10 +
+    parse_i32(str[4]) 
+}
+
+
+#[inline]
+fn atoi_u32(str: &[u8]) -> u32 {
+    parse_u32(str[0]) * 10000 +
+    parse_u32(str[1]) * 1000 +
+    parse_u32(str[2]) * 100 +
+    parse_u32(str[3]) * 10 +
+    parse_u32(str[4]) 
+}
+
 
 #[aoc(day1, part1)]
-pub fn part1(input: &str) -> i32 {
-
+fn part1(input: &str) -> i32 {
     let mut left = [0i32; 1000];
     let mut right = [0i32; 1000]; 
 
-    input.lines()
-        .filter_map(|line| line.split_once("   "))
-        .map(|line| {
-            (i32::from_str_radix(line.0, 10).unwrap(), i32::from_str_radix(line.1, 10).unwrap())
-        })
-        .enumerate()
-        .for_each(|(i, nums)| {
-            left[i] = nums.0;
-            right[i] = nums.1;
-        });
+    let input: &[u8] = unsafe { std::mem::transmute(&input[0..]) };
+
+    for (i, (x,y)) in (0..1000).map(|i| {
+        &input[i * 14.. i * 14 + 13]
+    })
+    .map(|line| {
+        (
+            atoi_i32(&line[0..5]), 
+            atoi_i32(&line[8..13])
+        )
+    }).enumerate() {
+        left[i] = x;
+        right[i] = y;
+    }
 
     left.sort_unstable();
     right.sort_unstable();
@@ -25,20 +62,44 @@ pub fn part1(input: &str) -> i32 {
 }
 
 #[aoc(day1, part2)]
-pub fn part2(input: &str) -> u32 {
-    let mut left_list = [0u32; 1000];
-    let mut right = hashbrown::HashMap::with_capacity(1000);
+pub fn run(input: &str) -> u32 {
+    let mut right: HashMap<u32, u32, BuildHasherDefault<FxHasher32>> = 
+        HashMap::with_capacity_and_hasher(1000, BuildHasherDefault::default());
 
-    input.lines()
-        .filter_map(|line| line.split_once("   "))
-        .map(|line| {
-            (u32::from_str_radix(line.0, 10).unwrap(), u32::from_str_radix(line.1, 10).unwrap())
-        })
-        .enumerate()
-        .for_each(|(i, nums)| {
-            right.entry(nums.1).and_modify(|x| *x += 1).or_insert(1);
-            left_list[i] = nums.0;
-        });
+    let mut left_list = [0u32; 1000];
+
+    let input: &[u8] = unsafe { std::mem::transmute(&input[0..]) };
+
+    for (i, (x,y)) in (0..1000).map(|i| {
+        &input[i * 14.. i * 14 + 13]
+    })
+    .map(|line| {
+        (
+            atoi_u32(&line[0..5]), 
+            atoi_u32(&line[8..13])
+        )
+    }).enumerate() {
+        right.entry(y).and_modify(|x| *x += 1).or_insert(1);
+        left_list[i] = x;
+    }
 
     left_list.iter().fold(0, |acc, num| acc + num * right.get(num).unwrap_or(&0))
+}
+
+
+#[test]
+fn bebra() {
+
+    let v = [1, 4, 2, 6, 7, 13, 25];
+
+    let mut a: Vec<i32> = Vec::new();
+
+    for x in &v {
+        let pos = a.binary_search(x).unwrap_or(0);
+
+        a.insert(pos, *x);
+    }
+
+    dbg!(a);
+
 }
