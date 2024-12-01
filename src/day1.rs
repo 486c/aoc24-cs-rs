@@ -14,7 +14,7 @@ fn part1(input: &str) -> i32 {
         .enumerate()
         .for_each(|(i, nums)| {
             left[i] = nums.0;
-            left[i] = nums.1;
+            right[i] = nums.1;
         });
 
     left.sort_unstable();
