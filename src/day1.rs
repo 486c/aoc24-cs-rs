@@ -6,51 +6,39 @@ fn part1(input: &str) -> i32 {
     let mut left = [0i32; 1000];
     let mut right = [0i32; 1000]; 
 
-    for (i, line) in input.lines().enumerate() {
-        let mut split = line.split("   ");
+    input.lines()
+        .filter_map(|line| line.split_once("   "))
+        .map(|line| {
+            (i32::from_str_radix(line.0, 10).unwrap(), i32::from_str_radix(line.1, 10).unwrap())
+        })
+        .enumerate()
+        .for_each(|(i, nums)| {
+            left[i] = nums.0;
+            left[i] = nums.1;
+        });
 
-        let num1: i32 = split.next().unwrap().parse().unwrap();
-        let num2: i32 = split.next().unwrap().parse().unwrap();
+    left.sort_unstable();
+    right.sort_unstable();
 
-        left[i] = num1;
-        right[i] = num2;
-    }
-
-    left.sort();
-    right.sort();
-
-    let zipped = zip(left.iter(), right.iter());
-    let mut sum = 0;
-
-    for (first, second) in zipped {
-        sum += (first - second).abs();
-    }
-
-
-    sum
+    zip(left.iter(), right.iter())
+        .fold(0, |acc, nums| acc + (nums.0 - nums.1).abs())
 }
 
 #[aoc(day1, part2)]
 fn part2(input: &str) -> u32 {
-    let mut left_list = Vec::with_capacity(1000);
+    let mut left_list = [0u32; 1000];
     let mut right = HashMap::with_capacity(1000);
 
-    for line in input.lines() {
-        let mut split = line.split("   ");
+    input.lines()
+        .filter_map(|line| line.split_once("   "))
+        .map(|line| {
+            (u32::from_str_radix(line.0, 10).unwrap(), u32::from_str_radix(line.1, 10).unwrap())
+        })
+        .enumerate()
+        .for_each(|(i, nums)| {
+            right.entry(nums.1).and_modify(|x| *x += 1).or_insert(1);
+            left_list[i] = nums.0;
+        });
 
-        let num1: u32 = split.next().unwrap().parse().unwrap();
-        let num2: u32 = split.next().unwrap().parse().unwrap();
-
-        right.entry(num2).and_modify(|x| *x += 1).or_insert(1);
-
-        left_list.push(num1);
-    }
-    
-    let mut sum = 0;
-
-    for n in left_list { 
-        sum += n * right.get(&n).unwrap_or(&0);
-    }
-
-    sum
+    left_list.iter().fold(0, |acc, num| acc + num * right.get(&num).unwrap_or(&0))
 }
