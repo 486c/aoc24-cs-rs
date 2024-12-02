@@ -37,7 +37,7 @@ unsafe fn parse_two_numbers_unrolled_i32(s: &[u8]) -> (i32, i32) {
 }
 
 #[aoc(day1, part1)]
-fn part1(input: &str) -> i32 {
+pub fn part1(input: &str) -> i32 {
     static mut LEFT: [i32; 1000] = [0i32; 1000];
     static mut RIGHT: [i32; 1000] = [0i32; 1000]; 
 
