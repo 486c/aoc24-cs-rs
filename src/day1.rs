@@ -1,7 +1,4 @@
-use std::{hash::BuildHasherDefault, iter::zip};
-
-use fxhash::FxHasher32;
-use hashbrown::HashMap;
+use std::iter::zip;
 
 #[inline(always)]
 unsafe fn parse_two_numbers_unrolled_u32(s: &[u8]) -> (u32, u32) {
@@ -39,7 +36,8 @@ unsafe fn parse_two_numbers_unrolled_i32(s: &[u8]) -> (i32, i32) {
     )
 }
 
-fn run(input: &str) -> i32 {
+#[aoc(day1, part1)]
+fn part1(input: &str) -> i32 {
     static mut LEFT: [i32; 1000] = [0i32; 1000];
     static mut RIGHT: [i32; 1000] = [0i32; 1000]; 
 
@@ -66,7 +64,7 @@ fn run(input: &str) -> i32 {
 }
 
 
-//#[aoc(day1, part2)]
+#[aoc(day1, part2)]
 pub fn part2(input: &str) -> u32 {
     static mut RIGHT: [u32; 100_000] = [0u32; 100_000];
     let mut left_list = [0; 1000];
