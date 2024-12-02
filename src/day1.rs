@@ -39,10 +39,9 @@ unsafe fn parse_two_numbers_unrolled_i32(s: &[u8]) -> (i32, i32) {
     )
 }
 
-//#[aoc(day1, part1)]
-fn part1(input: &str) -> i32 {
-    let mut left = [0i32; 1000];
-    let mut right = [0i32; 1000]; 
+fn run(input: &str) -> i32 {
+    static mut LEFT: [i32; 1000] = [0i32; 1000];
+    static mut RIGHT: [i32; 1000] = [0i32; 1000]; 
 
     let input: &[u8] = unsafe { std::mem::transmute(&input[0..]) };
 
@@ -51,20 +50,24 @@ fn part1(input: &str) -> i32 {
     })
     .map(|line| unsafe { parse_two_numbers_unrolled_i32(line) })
     .enumerate() {
-        left[i] = x;
-        right[i] = y;
+        unsafe {
+            LEFT[i] = x;
+            RIGHT[i] = y;
+        }
     }
-
-    left.sort_unstable();
-    right.sort_unstable();
-
-    zip(left.iter(), right.iter())
-        .fold(0, |acc, nums| acc + (nums.0 - nums.1).abs())
+    
+    unsafe {
+        LEFT.sort_unstable();
+        RIGHT.sort_unstable();
+    
+        zip(LEFT.iter(), RIGHT.iter())
+            .fold(0, |acc, nums| acc + (nums.0 - nums.1).abs())
+    }
 }
 
 
 //#[aoc(day1, part2)]
-pub fn run(input: &str) -> u32 {
+pub fn part2(input: &str) -> u32 {
     static mut RIGHT: [u32; 100_000] = [0u32; 100_000];
     let mut left_list = [0; 1000];
 
